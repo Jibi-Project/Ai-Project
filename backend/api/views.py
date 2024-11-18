@@ -53,7 +53,7 @@ def change_password(request):
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-# Create your views here.
+# Create everything in here buddy
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
