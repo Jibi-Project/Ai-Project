@@ -149,3 +149,11 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
 
 AUTH_USER_MODEL = 'api.User'  # Remplacez 'api' par le nom de votre application si différent
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'selfeni.company@gmail.com'
+EMAIL_HOST_PASSWORD ='zgoq xbss jifw cndw'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
