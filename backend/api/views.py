@@ -102,6 +102,7 @@ class UserViewSet(viewsets.ViewSet):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def forgot_password(request):
     email = request.data.get('email')
     try:
@@ -119,6 +120,7 @@ def forgot_password(request):
         return Response({"error": "Email not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def reset_password(request, user_id, token):
     new_password = request.data.get('new_password')
     try:
