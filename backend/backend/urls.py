@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.db import router
 from django.urls import path, include
-from api.views import CreateUserView, LoginView, change_password, forgot_password ,profile, reset_password
+from api.views import CreateUserView, LoginView, LogoutView, change_password, forgot_password ,profile, reset_password
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from ml_integration.views import predict_loan_status
 
@@ -20,6 +20,8 @@ urlpatterns = [
     path('api/forgot-password/', forgot_password, name='forgot_password'),
     path('api/reset-password/<int:user_id>/<str:token>/', reset_password, name='reset_password'),
     path('ml_integration/predict-loan-status/', predict_loan_status, name='predict-loan-status'),
+    path('api/logout/', LogoutView.as_view(), name='logout'),
+
 ]
 
 

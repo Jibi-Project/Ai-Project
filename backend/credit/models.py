@@ -27,3 +27,8 @@ class Credit(models.Model):
             duree_years = Decimal(self.duree) / Decimal(12)
             self.montant_total_remboursement = self.montant_demande * (1 + self.TAUX_INTERET / 100 * duree_years)
         super().save(*args, **kwargs)
+
+    def get_users_with_ongoing_credits():
+    # Filter users with ongoing credits
+        ongoing_credits = User.objects.filter(credits__statut='encours').distinct()
+        return ongoing_credits

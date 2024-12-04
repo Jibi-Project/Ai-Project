@@ -16,6 +16,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -29,6 +31,8 @@ def profile(request):
         'prenom': user.prenom,
         'role': user.role,
         'email': user.email,
+        'telephone':user.telephone,
+        'adresse':user.adresse
     })
 
 @api_view(['POST'])
@@ -62,19 +66,45 @@ class CreateUserView(generics.CreateAPIView):
 
 class UserViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
-
+    
     def list(self, request):
-        """List all users (admin only)"""
-        self.check_permissions(request)
-        users = User.objects.all()
+        """List all users with the 'client' role (accessible only to 'admin' users)"""
+        # Check if the requesting user has the 'admin' role
+        if request.user.role != 'admin':
+            return Response(
+                {"detail": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        # Filter users with the 'client' role
+        users = User.objects.filter(role='client')
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+
     def retrieve(self, request, pk=None):
-        """Retrieve a specific user by ID"""
+        """Retrieve a specific client user by ID (accessible only to admin users)"""
+        # Check if the requesting user has the 'admin' role
+        if request.user.role != 'admin':
+            return Response(
+                {"detail": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Fetch the user by ID
         user = get_object_or_404(User, pk=pk)
+
+        # Ensure the retrieved user is a client
+        if user.role != 'client':
+            return Response(
+                {"detail": "You can only retrieve users with the 'client' role."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Serialize and return the user
         serializer = UserSerializer(user)
         return Response(serializer.data)
+
 
     def create(self, request):
         """Create a new user"""
@@ -132,3 +162,16 @@ def reset_password(request, user_id, token):
         return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
     except User.DoesNotExist:
         return Response({"error": "Invalid user"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh_token")
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
