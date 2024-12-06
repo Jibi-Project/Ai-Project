@@ -27,6 +27,7 @@ from django.core.exceptions import ValidationError
 def profile(request):
     user = request.user
     return Response({
+        'id':user.id,
         'nom': user.nom,
         'prenom': user.prenom,
         'role': user.role,
@@ -66,6 +67,7 @@ class CreateUserView(generics.CreateAPIView):
 
 class UserViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'patch', 'put', 'delete'] 
     
     def list(self, request):
         """List all users with the 'client' role (accessible only to 'admin' users)"""
@@ -83,24 +85,9 @@ class UserViewSet(viewsets.ViewSet):
 
 
     def retrieve(self, request, pk=None):
-        """Retrieve a specific client user by ID (accessible only to admin users)"""
-        # Check if the requesting user has the 'admin' role
-        if request.user.role != 'admin':
-            return Response(
-                {"detail": "You do not have permission to perform this action."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
+        """Retrieve a specific user by ID (accessible to any authenticated user)"""
         # Fetch the user by ID
         user = get_object_or_404(User, pk=pk)
-
-        # Ensure the retrieved user is a client
-        if user.role != 'client':
-            return Response(
-                {"detail": "You can only retrieve users with the 'client' role."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         # Serialize and return the user
         serializer = UserSerializer(user)
         return Response(serializer.data)
@@ -114,13 +101,26 @@ class UserViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def partial_update(self, request, pk=None):
+            """
+            Handle PATCH requests to update specific fields of a user.
+            """
+            user = get_object_or_404(User, pk=pk)
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def update(self, request, pk=None):
-        """Update a specific user"""
+        """
+        Handle PUT requests to update all fields of a user.
+        """
         user = get_object_or_404(User, pk=pk)
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):

@@ -141,8 +141,8 @@ def get_encours_credits_for_admins(request):
             "id": credit.id,
             "montant_demande": credit.montant_demande,
             "duree": credit.duree,
-            "taux_interet": credit.taux_interet,
-            "client": credit.client.email,  # Assuming email is the username field
+            
+            "client": credit.client.nom,  # Assuming email is the username field
             "date_demande": credit.date_demande,
             "statut": credit.statut,
         }
