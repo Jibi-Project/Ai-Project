@@ -93,7 +93,7 @@ def add_loan_prediction(request):
             loan_status = "Approved" if prediction[0] == 1 else "Rejected"
 
             # Save the data to the database
-            LoanPrediction.objects.create(
+            loan_prediction =  LoanPrediction.objects.create(
                 user = request.user,
                 gender=data['Gender'], married=data['Married'], dependents=dependents, education=data['Education'],
                 self_employed=data['SelfEmployed'], applicant_income=data['ApplicantIncome'],
@@ -102,8 +102,54 @@ def add_loan_prediction(request):
                 property_area=data['Property_Area'], loan_status=loan_status
             )
 
-            return JsonResponse({'loan_status': loan_status})
+            return JsonResponse({'loan_status': loan_status,'id': loan_prediction.id })
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    
+    
+@csrf_exempt
+def get_loan_prediction_by_id(request, loan_prediction_id=None):
+    """
+    Handles GET requests to fetch loan prediction details by ID or all loan predictions.
+    """
+    if request.method == 'GET':
+        if loan_prediction_id:
+            try:
+                # Try to fetch the LoanPrediction object by ID
+                loan_prediction = LoanPrediction.objects.get(id=loan_prediction_id)
+                
+                # Prepare response data
+                response_data = {
+                    'id': loan_prediction.id,
+                    'user_id': loan_prediction.user.id,  # Assuming user is a ForeignKey to User
+                    'gender': loan_prediction.gender,
+                    'client_pr':loan_prediction.user.prenom,
+                    'client_n':loan_prediction.user.nom,
+
+                    'married': loan_prediction.married,
+                    'dependents': loan_prediction.dependents,
+                    'education': loan_prediction.education,
+                    'self_employed': loan_prediction.self_employed,
+                    'applicant_income': loan_prediction.applicant_income,
+                    'coapplicant_income': loan_prediction.coapplicant_income,
+                    'loan_amount': loan_prediction.loan_amount,
+                    'loan_amount_term': loan_prediction.loan_amount_term,
+                    'credit_history': loan_prediction.credit_history,
+                    'property_area': loan_prediction.property_area,
+                    'loan_status': loan_prediction.loan_status,
+                    'created_at': loan_prediction.created_at,
+                }
+
+                return JsonResponse(response_data)
+
+            except LoanPrediction.DoesNotExist:
+                raise Http404("Loan Prediction not found")
+        else:
+            # If no loan_prediction_id is provided, return all loan predictions
+            loan_predictions = LoanPrediction.objects.all().values()
+            return JsonResponse(list(loan_predictions), safe=False)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)

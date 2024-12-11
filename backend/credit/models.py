@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.db import models
 from api.models import User
+from ml_integration.models import LoanPrediction
 
 class Credit(models.Model):
     STATUT_CHOICES = [
@@ -18,7 +19,16 @@ class Credit(models.Model):
     date_approvee = models.DateTimeField(null=True, blank=True)
     montant_total_remboursement = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='credits')
-    statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default='encours')  
+    statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default='encours') 
+        # Foreign key to LoanPrediction
+    loan_prediction = models.ForeignKey(
+        LoanPrediction,
+        on_delete=models.SET_NULL,  # Optional: set to null if the related LoanPrediction is deleted
+        null=True,  # Allow null values if a Credit is not linked to a LoanPrediction
+        blank=True,  # Allow the field to be optional in forms
+        related_name='credits'  # Reverse relation name
+    )
+
 
     def save(self, *args, **kwargs):
         # Automatically calculate the total repayment amount if not specified

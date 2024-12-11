@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action ,api_view, permission_classes
+
+from ml_integration.models import LoanPrediction
 from .models import Credit
 from .serializers import CreditSerializer
 from django.shortcuts import get_object_or_404
@@ -34,13 +36,27 @@ class CreditViewSet(viewsets.ModelViewSet):
     # Override create to set client to the current user if it's a client
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
+        
+        # Automatically assign the logged-in client
         if request.user.role == 'client':
             data['client'] = request.user.id
+
+        # Optionally associate with a LoanPrediction instance
+        loan_prediction_id = data.get('loan_prediction')
+        if loan_prediction_id:
+            try:
+                # Validate the LoanPrediction instance
+                loan_prediction = LoanPrediction.objects.get(id=loan_prediction_id, user=request.user)
+                data['loan_prediction'] = loan_prediction.id
+            except LoanPrediction.DoesNotExist:
+                return Response({'error': 'Invalid LoanPrediction ID or not authorized'}, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 
     #URL : POST /credits/{id}/approve/
@@ -125,6 +141,7 @@ class CreditViewSet(viewsets.ModelViewSet):
             
             
             
+            
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_encours_credits_for_admins(request):
@@ -145,7 +162,7 @@ def get_encours_credits_for_admins(request):
             "client": credit.client.nom,  # Assuming email is the username field
             "date_demande": credit.date_demande,
             "statut": credit.statut,
-        }
+            "loan_prediction": credit.loan_prediction.id if credit.loan_prediction else None        }
         for credit in credits
     ]
     return Response(data, status=200)

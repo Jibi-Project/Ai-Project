@@ -4,7 +4,7 @@ from django.db import router
 from django.urls import path, include
 from api.views import CreateUserView, LoginView, LogoutView, change_password, forgot_password ,profile, reset_password
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from ml_integration.views import predict_loan_status, add_loan_prediction
+from ml_integration.views import get_loan_prediction_by_id, predict_loan_status, add_loan_prediction
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,6 +23,9 @@ urlpatterns = [
     path('ml_integration/predict-loan-status/add', add_loan_prediction, name='predict-loan-status'),
     path('ml_integration/predict-loan-status/<int:loan_id>/', predict_loan_status, name='get_loan_by_id'),
     path('api/logout/', LogoutView.as_view(), name='logout'),
+    
+    path('loan_prediction/<int:loan_prediction_id>/', get_loan_prediction_by_id, name='get_loan_prediction_by_id'),
+
 
 ]
 
