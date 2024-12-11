@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.conf import settings
 class LoanPrediction(models.Model):
     gender = models.CharField(max_length=10)
     married = models.CharField(max_length=10)
@@ -13,4 +13,5 @@ class LoanPrediction(models.Model):
     credit_history = models.FloatField()
     property_area = models.CharField(max_length=20)
     loan_status = models.CharField(max_length=20)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)  # Updated line
     created_at = models.DateTimeField(auto_now_add=True)
