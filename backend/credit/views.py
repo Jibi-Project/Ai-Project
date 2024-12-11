@@ -141,7 +141,7 @@ def get_encours_credits_for_admins(request):
             "id": credit.id,
             "montant_demande": credit.montant_demande,
             "duree": credit.duree,
-            
+            "client_id":credit.client.id,
             "client": credit.client.nom,  # Assuming email is the username field
             "date_demande": credit.date_demande,
             "statut": credit.statut,
@@ -167,3 +167,29 @@ def get_users_with_ongoing_credits(request):
     users = User.objects.filter(credits__statut='encours').distinct()
     data = [{"id": user.id, "name": user.nom, "email": user.email} for user in users]
     return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_credits_for_admins(request):
+    user = request.user
+
+    # Check if the user is an admin
+    if user.role != 'admin':  # Adjust based on your User model
+        return Response({"error": "Access denied. Admins only."}, status=403)
+
+    # Fetch all credits
+    credits = Credit.objects.all()
+    data = [
+        {
+            "id": credit.id,
+            "montant_demande": credit.montant_demande,
+            "duree": credit.duree,
+            "client_id": credit.client.id,
+            "client": credit.client.nom,  # Assuming client.nom exists in your model
+            "date_demande": credit.date_demande,
+            "statut": credit.statut,
+        }
+        for credit in credits
+    ]
+    return Response(data, status=200)
