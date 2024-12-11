@@ -57,8 +57,52 @@ class CreditViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+  #POST /api/credits/35/approve-credit-status/
+    @action(detail=True, methods=['post'], url_path='approve-credit-status')
+    def update_approve_status(self, request, pk=None):
+        # Retrieve the credit request
+        credit = get_object_or_404(Credit, pk=pk)
+        
+        # Check if the user is an admin
+        if request.user.role == 'admin':
+            # Update the approval date and status
+            credit.date_approvee = now()
+            credit.statut = 'approuvé'
+            credit.save()
 
+            return Response(
+                {"message": "Credit approval status updated successfully, no email sent."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"detail": "Not authorized."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+    
+    #POST /api/credits/35/approve-credit-status/
+    @action(detail=True, methods=['post'], url_path='reject-credit-status')
+    def update_reject_status(self, request, pk=None):
+        # Retrieve the credit request
+        credit = get_object_or_404(Credit, pk=pk)
+        
+        # Check if the user is an admin
+        if request.user.role == 'admin':
+            # Update the approval date and status
+            credit.date_approvee = now()
+            credit.statut = 'refusé'
+            credit.save()
 
+            return Response(
+                {"message": "Credit refus status updated successfully, no email sent."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"detail": "Not authorized."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+            
     #URL : POST /credits/{id}/approve/
 
     @action(detail=True, methods=['post'])
@@ -81,14 +125,14 @@ class CreditViewSet(viewsets.ModelViewSet):
                 f"Détails du crédit :\n"
                 f"- Montant demandé : {credit.montant_demande} €\n"
                 f"- Durée : {credit.duree} mois\n"
-                f"- Taux d'intérêt : {credit.taux_interet}%\n"
+            
                 f"- Montant total à rembourser : {credit.montant_total_remboursement} €\n\n"
                 f"Cordialement,\nL'équipe de gestion des crédits."
             )
             send_mail(
                 subject=subject,
                 message=message,
-                from_email="selfeni.company@gmail.com",  # Remplacez par votre adresse email
+                from_email="selefni.credit@gmail.com",  # Remplacez par votre adresse email
                 recipient_list=[credit.client.email],
             )
 
