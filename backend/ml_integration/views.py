@@ -4,8 +4,9 @@ import numpy as np
 import json
 from django.http import JsonResponse, Http404
 from .models import LoanPrediction
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view ,permission_classes
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
 
 # Base directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,7 +52,11 @@ def predict_loan_status(request, loan_id=None):
             return JsonResponse(list(loans), safe=False)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@api_view(['POST'])
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def add_loan_prediction(request):
     """
     Handles POST requests to add a new loan prediction.
@@ -89,6 +94,7 @@ def add_loan_prediction(request):
 
             # Save the data to the database
             LoanPrediction.objects.create(
+                user = request.user,
                 gender=data['Gender'], married=data['Married'], dependents=dependents, education=data['Education'],
                 self_employed=data['SelfEmployed'], applicant_income=data['ApplicantIncome'],
                 coapplicant_income=data['CoapplicantIncome'], loan_amount=data['LoanAmount'],

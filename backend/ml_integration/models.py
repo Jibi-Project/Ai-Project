@@ -13,5 +13,5 @@ class LoanPrediction(models.Model):
     credit_history = models.FloatField()
     property_area = models.CharField(max_length=20)
     loan_status = models.CharField(max_length=20)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)  # Updated line
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE ,related_name='credits_m')  # Updated line
     created_at = models.DateTimeField(auto_now_add=True)
