@@ -132,7 +132,7 @@ class CreditViewSet(viewsets.ModelViewSet):
             send_mail(
                 subject=subject,
                 message=message,
-                from_email="selefni.credit@gmail.com",  # Remplacez par votre adresse email
+                from_email="appbankati@gmail.com",  # Remplacez par votre adresse email
                 recipient_list=[credit.client.email],
             )
 
@@ -169,7 +169,7 @@ class CreditViewSet(viewsets.ModelViewSet):
             send_mail(
                 subject=subject,
                 message=message,
-                from_email="selfeni.company@gmail.com",  # Remplacez par votre adresse email
+                from_email="appbankati@gmail.com",  # Remplacez par votre adresse email
                 recipient_list=[credit.client.email],
             )
 

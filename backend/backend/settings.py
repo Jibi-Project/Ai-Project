@@ -160,8 +160,8 @@ AUTH_USER_MODEL = 'api.User'  # Remplacez 'api' par le nom de votre application 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'selfeni.company@gmail.com'
-EMAIL_HOST_PASSWORD ='zgoq xbss jifw cndw'
+EMAIL_HOST_USER = 'appbankati@gmail.com'
+EMAIL_HOST_PASSWORD ='wxub ocdz ngsg zica'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
